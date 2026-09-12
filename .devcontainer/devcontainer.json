@@ -1,0 +1,42 @@
+{
+  "name": "React Native Android Development",
+  "image": "ubuntu:24.04",    
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "jdkDistro": "tem",
+      "installGradle": "yes"
+    },
+    "ghcr.io/devcontainers/features/node:2": {
+        "version": "lts",
+        "npmVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:1": {
+      "configureZshAsDefaultShell": false
+    }
+  },
+  "remoteUser": "ubuntu",
+  "forwardPorts": [
+    8081, // Default Metro Bundler Port
+    19000, // Expo manifest port (if using legacy Expo)
+    19001, // Expo packager port (if using legacy Expo)
+    19002  // Expo developer tools port
+  ],
+  // Optional: Automatically installs useful extensions inside your DevContainer
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "msjsdiag.vscode-react-native",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vscjava.vscode-java-pack"
+      ]
+    }
+  },
+  "mounts": [
+      "source=gradle-cache,target=/home/ubuntu/.gradle,type=volume"
+    ]
+}

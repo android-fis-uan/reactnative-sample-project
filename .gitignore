@@ -13,3 +13,116 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# ---------------------------------------------------------------------------
+# Dev Containers & IDEs
+# ---------------------------------------------------------------------------
+.devcontainer/.env
+.devcontainer/*lock.json
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ---------------------------------------------------------------------------
+# Dependencies & Package Managers
+# ---------------------------------------------------------------------------
+node_modules/
+jspm_packages/
+.pnpm-store/
+.yarn/
+!.yarn/releases
+!.yarn/plugins
+yarn-error.log
+.eslintcache
+
+# ---------------------------------------------------------------------------
+# Build Outputs & Temporary Files
+# ---------------------------------------------------------------------------
+lib/
+dist/
+build/
+*.gem
+*.apk
+*.aab
+*.bundle
+
+# ---------------------------------------------------------------------------
+# Android Specifics
+# ---------------------------------------------------------------------------
+android/app/build/
+android/.gradle/
+android/local.properties
+android/keycaches/
+android/*.keystore
+!android/app/debug.keystore
+
+# ---------------------------------------------------------------------------
+# iOS Specifics
+# ---------------------------------------------------------------------------
+ios/build/
+ios/DerivedData/
+ios/Pods/
+ios/.xcode.env.local
+.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+
+# ---------------------------------------------------------------------------
+# Expo Ecosystem (If applicable)
+# ---------------------------------------------------------------------------
+.expo/
+.eas/
+dist/
+web-build/
+expo-env.d.ts
+
+# ---------------------------------------------------------------------------
+# Environment Variables & Security Credentials
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.pem
+
+# ---------------------------------------------------------------------------
+# Added by Metro
+# ---------------------------------------------------------------------------
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android
