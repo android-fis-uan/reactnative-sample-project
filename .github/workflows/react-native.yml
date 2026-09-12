@@ -20,9 +20,12 @@ jobs:
 
           # Remove heavy pre-installed software suites not needed for React Native
           sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/boost
+
+          # Purge ONLY the heavy pre-installed emulator system images inside the SDK
+          sudo rm -rf /usr/local/lib/android/sdk/system-images/*
+          sudo rm -rf /usr/local/lib/android/sdk/emulator
 
           # Clean up Docker images cached on the runner
           sudo docker image prune --all --force
@@ -47,7 +50,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
-          cache: "gradle"
+          # cache: "gradle"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
