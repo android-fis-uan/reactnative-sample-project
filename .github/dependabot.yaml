@@ -10,6 +10,13 @@ updates:
         patterns:
           - "react*"
           - "expo*"
+    ignore:
+      - package-name: "expo"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - package-name: "expo-*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - package-name: "react-native"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: "devcontainers"
     directory: "/"
