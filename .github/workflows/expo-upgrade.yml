@@ -33,10 +33,15 @@ jobs:
         run: npm ci
 
       - name: Upgrade Expo SDK and align dependencies
+        id: versions
         run: |
+          source_version=$(node -p "require('./package-lock.json').packages['node_modules/expo'].version")
           npm install expo@latest
           npx expo install --fix
           npx expo-doctor
+          target_version=$(node -p "require('./package-lock.json').packages['node_modules/expo'].version")
+          echo "source_version=$source_version" >> "$GITHUB_OUTPUT"
+          echo "target_version=$target_version" >> "$GITHUB_OUTPUT"
 
       - name: Generate Android Native Folder (Prebuild)
         run: npx expo prebuild --platform android
@@ -65,8 +70,10 @@ jobs:
 
       - name: Create upgrade branch
         id: branch
+        env:
+          TARGET_VERSION: ${{ steps.versions.outputs.target_version }}
         run: |
-          branch="automation/expo-sdk-upgrade-$(date -u +%Y%m%d%H%M%S)"
+          branch="automation/expo-sdk-upgrade-${TARGET_VERSION}-$(date -u +%Y%m%d%H%M%S)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch --create "$branch"
@@ -94,6 +101,8 @@ jobs:
         env:
           BASE_BRANCH: ${{ inputs.base_branch }}
           HEAD_BRANCH: ${{ steps.branch.outputs.name }}
+          SOURCE_VERSION: ${{ steps.versions.outputs.source_version }}
+          TARGET_VERSION: ${{ steps.versions.outputs.target_version }}
         with:
           github-token: ${{ secrets.EXPO_UPGRADE_TOKEN }}
           script: |
@@ -107,6 +116,9 @@ jobs:
                 '## Expo SDK upgrade',
                 '',
                 'This pull request was created automatically by the `expo-upgrade` workflow.',
+                '',
+                `Source Expo version: ${process.env.SOURCE_VERSION}`,
+                `Target Expo version: ${process.env.TARGET_VERSION}`,
                 '',
                 'The workflow upgraded `expo` to the latest stable SDK and ran `npx expo install --fix` to align compatible package versions.',
                 '`npx expo-doctor` completed successfully during the workflow.'
