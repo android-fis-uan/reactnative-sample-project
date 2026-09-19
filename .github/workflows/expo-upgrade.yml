@@ -95,6 +95,7 @@ jobs:
           BASE_BRANCH: ${{ inputs.base_branch }}
           HEAD_BRANCH: ${{ steps.branch.outputs.name }}
         with:
+          github-token: ${{ secrets.EXPO_UPGRADE_TOKEN }}
           script: |
             const { data: pullRequest } = await github.rest.pulls.create({
               owner: context.repo.owner,
