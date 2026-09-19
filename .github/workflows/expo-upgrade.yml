@@ -1,0 +1,115 @@
+name: Expo SDK Upgrade
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_branch:
+        description: Branch to upgrade
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.base_branch }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install current dependencies
+        run: npm ci
+
+      - name: Upgrade Expo SDK and align dependencies
+        run: |
+          npm install expo@latest
+          npx expo install --fix
+          npx expo-doctor
+
+      - name: Generate Android Native Folder (Prebuild)
+        run: npx expo prebuild --platform android
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          # cache: "gradle"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          build-scan-publish: true
+          build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      - name: Build Android Release APK
+        run: |
+          cd android
+          ORG_GRADLE_PROJECT_bundleInDebug=true ./gradlew assembleDebug --no-daemon -PreactNativeArchitectures=arm64-v8a
+
+      - name: Create upgrade branch
+        id: branch
+        run: |
+          branch="automation/expo-sdk-upgrade-$(date -u +%Y%m%d%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$branch"
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push upgrade changes
+        id: changes
+        env:
+          BRANCH: ${{ steps.branch.outputs.name }}
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Expo did not produce package changes."
+            exit 0
+          fi
+
+          git add package.json package-lock.json
+          git commit -m "chore: upgrade Expo SDK"
+          git push --set-upstream origin "$BRANCH"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/github-script@v8
+        env:
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          HEAD_BRANCH: ${{ steps.branch.outputs.name }}
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore: upgrade Expo SDK',
+              head: process.env.HEAD_BRANCH,
+              base: process.env.BASE_BRANCH,
+              body: [
+                '## Expo SDK upgrade',
+                '',
+                'This pull request was created automatically by the `expo-upgrade` workflow.',
+                '',
+                'The workflow upgraded `expo` to the latest stable SDK and ran `npx expo install --fix` to align compatible package versions.',
+                '`npx expo-doctor` completed successfully during the workflow.'
+              ].join('\n')
+            });
+
+            core.info(`Created pull request #${pullRequest.number}: ${pullRequest.html_url}`);
